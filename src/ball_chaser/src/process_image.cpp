@@ -32,42 +32,55 @@ void process_image_callback(const sensor_msgs::Image img)
     int white_pixel = 255;
 
     // TODO: Loop through each pixel in the image and check if there's a bright white one
-    // Then, identify if this pixel falls in the left, mid, or right side of the image
-    // Depending on the white ball position, call the drive_bot function and pass velocities to it
-    // Request a stop when there's no white ball seen by the camera
+    
+    
+    
 
-	int white = 0;
+	int find_white = 0;
     int ball_position_x = 0;
     int ball_position_y = 0;
+	// position of white ball
     int image_size = img.data.size();
+	//ref image size
+
+	// Then, identify if this pixel falls in the left, mid, or right side of the image
 
     for(int i = 0; i+2<image_size; i+=3){
-	int red_channel = img.data[i];
-	int green_channel = img.data[i+1];
-	int blue_channel = img.data[i+2];
+	int red_color = img.data[i];
+	int green_color = img.data[i+1];
+	int blue_color = img.data[i+2];
+	//set 'color'_channel to img.data.size() value
 
-	if(red_channel == 255 && green_channel == 255 && blue_channel == 255)
+	if(red_color == 255 && green_color == 255 && blue_color == 255)
 	{
 		int x_pos =  (i % (img.width * 3))/3;
+
+
+
 		//int y_pos =  (i % (img.height * 3))/3;
 		ball_position_x += x_pos;
 		//ball_pos_y += y_pos;
-		white += 1;
+		find_white += 1;
  	}
     }
-    
-    //Robot velocity control part
-    if(white == 0)
+    // Request a stop when there's no white ball seen by the camera
+    //Ball chase properties
+    if(find_white == 0)
     {
 	drive_robot(0.0, 0.0); 
     }
+	//ball not in sight
     else
+
+	// Depending on the white ball position, call the drive_bot function and pass velocities to it
     {
-	int ball_pos = ball_position_x / white;
+	int ball_pos = ball_position_x / find_white;
         if (ball_pos < img.width / 3)
         {
       		drive_robot(0.0, 0.5);
     	}
+
+
     	else if (ball_pos > img.width * 2 / 3)
     	{
       		drive_robot(0.0, -0.5);
@@ -76,7 +89,8 @@ void process_image_callback(const sensor_msgs::Image img)
     	{
       		drive_robot(0.5, 0.0);
     	}
-    }
+	//given values ref* drive_bot    
+	}
 
 
 
