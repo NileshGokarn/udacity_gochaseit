@@ -27,79 +27,63 @@ void drive_robot(float lin_x, float ang_z)
 
 // This callback function continuously executes and reads the image data
 void process_image_callback(const sensor_msgs::Image img)
+
+
+    
+
+
 {
 
-    int white_pixel = 255;
+	
+	int white_pixel = 255;
+	bool ball_visible = false;
+	int section_w ;
+	int orient_x = 0 ;
+	int pix_white = 0; 
+	
 
     // TODO: Loop through each pixel in the image and check if there's a bright white one
-    
-    
+    	
+    	
     
 
-	int find_white = 0;
-    int ball_position_x = 0;
-    int ball_position_y = 0;
-	// position of white ball
-    int image_size = img.data.size();
-	//ref image size
-
-	// Then, identify if this pixel falls in the left, mid, or right side of the image
-
-    for(int i = 0; i+2<image_size; i+=3){
-	int red_color = img.data[i];
+    
+    for (int i=0; i < img.height * img.step; i += 3)
+	/*int red_color = img.data[i];
 	int green_color = img.data[i+1];
-	int blue_color = img.data[i+2];
-	//set 'color'_channel to img.data.size() value
-
-	if(red_color == 255 && green_color == 255 && blue_color == 255)
-	{
-		int x_pos =  (i % (img.width * 3))/3;
-
-
-
-		//int y_pos =  (i % (img.height * 3))/3;
-		ball_position_x += x_pos;
-		//ball_pos_y += y_pos;
-		find_white += 1;
- 	}
-    }
-    // Request a stop when there's no white ball seen by the camera
-    //Ball chase properties
-    if(find_white == 0)
+	int blue_color = img.data[i+2];*/
     {
-	drive_robot(0.0, 0.0); 
-    }
-	//ball not in sight
-    else
-
-	// Depending on the white ball position, call the drive_bot function and pass velocities to it
-    {
-	int ball_pos = ball_position_x / find_white;
-        if (ball_pos < img.width / 3)
+       // if ((red_color == 255) && (green_color ==255) && (blue_color == 255))
+	if ((img.data[i] == 255) && (img.data[i+1] == 255) && (img.data[i+2] == 255))
         {
-      		drive_robot(0.0, 0.5);
-    	}
+            section_w = (i % (img.step*3)) /3;
+			orient_x += section_w ;
+			
+			pix_white++;
 
 
-    	else if (ball_pos > img.width * 2 / 3)
-    	{
-      		drive_robot(0.0, -0.5);
-    	}
-    	else
-    	{
-      		drive_robot(0.5, 0.0);
-    	}
-	//given values ref* drive_bot    
-	}
+ 	int ball_location = orient_x / pix_white;
 
+// Then, identify if this pixel falls in the left, mid, or right side of the image
+          if (ball_location < img.step/3)
+                drive_robot(0.5,1);//l
+            else if (ball_location > (img.step*2) /3)
+                drive_robot(0.5,-1);//r
+            else
+                drive_robot(0.5,0);
+            ball_visible = true;
+            break;
+     	  }
+    }
 
+     if (ball_visible == false)
 
-
-
+         drive_robot(0, 0);             
 }
 
-int main(int argc, char** argv)
-{
+
+int main(int argc, char** argv){
+
     // Initialize the process_image node and create a handle to it
     ros::init(argc, argv, "process_image");
     ros::NodeHandle n;
@@ -114,4 +98,8 @@ int main(int argc, char** argv)
     ros::spin();
 
     return 0;
+
+
 }
+
+
